@@ -355,10 +355,13 @@
           let coat_of_arms_image =
             document.getElementById("coat-of-arms-image");
 
+          let SHOULD_ALERT_USER_OF_IMAGE_SIZE = true;
+
           coat_of_arms_image.addEventListener("load", (e) => {
             if (
-              coat_of_arms_image.naturalWidth > dropArea.offsetWidth * 2 ||
-              coat_of_arms_image.naturalHeight > dropArea.offsetHeight * 2
+              SHOULD_ALERT_USER_OF_IMAGE_SIZE &&
+              (coat_of_arms_image.naturalWidth > dropArea.offsetWidth * 2 ||
+                coat_of_arms_image.naturalHeight > dropArea.offsetHeight * 2)
             )
               alert(
                 `You have chosen a very large image for your coat of arms.
@@ -411,6 +414,7 @@ ${dropArea.offsetWidth * 2} x ${dropArea.offsetHeight * 2} pixels.`
             let reader = new FileReader();
 
             reader.readAsDataURL(file);
+            SHOULD_ALERT_USER_OF_IMAGE_SIZE = true;
             reader.onloadend = (r) => set_coat_of_arms(reader.result);
           }
 
@@ -1183,7 +1187,8 @@ ${dropArea.offsetWidth * 2} x ${dropArea.offsetHeight * 2} pixels.`
       const STORAGE_KEY = "team-sheet";
       let sheet_form = document.forms["team-sheet"];
 
-      sheet_form.addEventListener("change", function () {
+      sheet_form.addEventListener("change", () => {
+        console.log("FORM IS CHANGIN");
         setTimeout(saveSheet, 0);
       });
 
@@ -1198,6 +1203,7 @@ ${dropArea.offsetWidth * 2} x ${dropArea.offsetHeight * 2} pixels.`
       }
 
       function saveSheet() {
+        window.cs = convertSheetToJson();
         localStorage.setItem(STORAGE_KEY, convertSheetToJson());
       }
 
@@ -1207,15 +1213,16 @@ ${dropArea.offsetWidth * 2} x ${dropArea.offsetHeight * 2} pixels.`
         if (!stored) return;
 
         let data = JSON.parse(stored);
-
+        console.log("team-name", data["team-name"]);
         for (let key in data) {
           if (!sheet_form[key]) continue;
 
-          if (sheet_form[key].checked === undefined)
+          if (sheet_form[key].type !== "checkbox")
             sheet_form[key].value = data[key];
           else sheet_form[key].checked = data[key] === "on";
         }
 
+        SHOULD_ALERT_USER_OF_IMAGE_SIZE = false;
         if (data.coat_of_arms_image) set_coat_of_arms(data.coat_of_arms_image);
       }
 
